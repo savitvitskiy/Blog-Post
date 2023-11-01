@@ -1,0 +1,136 @@
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% load bootstrap_icons %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    * {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial;
+  padding: 20px;
+  background: #f1f1f1;
+}
+
+.header {
+  padding: 2px;
+  text-align: center;
+  background: white;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header h2 {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.leftcolumn {
+  float: left;
+  width: 100%;
+}
+
+.card {
+   background-color: white;
+   padding: 20px;
+   margin-top: 20px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media screen and (max-width: 800px) {
+  .leftcolumn, .rightcolumn {
+    width: 100%;
+    padding: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/" style="text-decoration: none; color: black;"><h2>Sarah's Blog</h2></a>
+</div>
+
+<div class="row">
+  <div class="leftcolumn">
+    <div class="card">
+        <h2>{{post.title}}</h2>
+        <p>{{post.created_at}}</p>
+        {% if post.image %}
+        <img src="{{post.image.url}}" width="200px">
+        {% endif %}
+        <p>{{post.body|safe}}</p>
+    </div>
+   </div>
+</div>
+
+<div>
+    {% for comment in comments%}
+    <div class="card">
+        <div>
+           <b>{{comment.author}}</b>
+            <time datetime="2020-01-01">{{comment.created_at}}</time>
+            <a href="#collapse{{comment.id}}" data-bs-toggle="collapse" style="text-decoration: none; color: gray;">{% bs_icon 'reply-fill' %}<b>Reply</b></a>
+        </div>
+        <div>
+            {{comment.body}}
+        </div>
+
+        {% for reply in comment.replies.all %}
+        <div style="margin-left: 50px">
+            <div>
+                <br/>
+                <b>{{reply.author}}</b>
+                <time datetime="2020-01-01">{{reply.created_at}}</time>
+            </div>
+            <div>
+                {{reply.body}}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div id="collapse{{comment.id}}" class="collapse reply-form" style="margin-left: 50px">
+            <form action="/post/{{post.id}}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div>{{form.author}}</div>
+                <div>{{form.body}}</div>
+                <input type="hidden" name="parent_id" value="{{comment.id}}">
+                <button type="submit">Post Reply</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    <br/>
+    <div>
+        <h4>Leave a Comment</h4>
+        <form action="/post/{{post.id}}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div>
+                {{form.author}}
+            </div>
+            <div>
+               {{form.body}}
+            </div>
+            <input type="hidden" name="reply_id" value="{{comment.id}}">
+            <button type="submit">Post Comment</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
